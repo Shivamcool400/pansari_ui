@@ -1,0 +1,1217 @@
+import React, { useState, useEffect } from 'react';
+
+// Define the task model
+const Task = (id, title, worker, status) => {
+  return {
+    id,
+    title,
+    worker,
+    status
+  };
+};
+
+// Define the worker model
+const Worker = (id, name, role) => {
+  return {
+    id,
+    name,
+    role
+  };
+};
+
+// Create some sample workers and tasks
+const workers = [
+  Worker(1, 'John Doe', 'admin'),
+  Worker(2, 'Jane Doe', 'worker'),
+  Worker(3, 'Jim Doe', 'worker')
+];
+
+const tasks = [
+  Task(1, 'Task 1', 'John Doe', 'pending'),
+  Task(2, 'Task 2', 'Jane Doe', 'pending'),
+  Task(3, 'Task 3', 'Jim Doe', 'pending')
+];
+
+// Define the App component
+const App = () => {
+  // State for tasks and workers
+  const [allTasks, setAllTasks] = useState(tasks);
+  const [allWorkers, setAllWorkers] = useState(workers);
+
+  // Function to update a task status
+  const updateTaskStatus = (taskId, newStatus) => {
+    setAllTasks(
+      allTasks.map(task => {
+        if (task.id === taskId) {
+          return { ...task, status: newStatus };
+        }
+        return task;
+      })
+    );
+  };
+
+  // Function to add a new task
+  const addTask = (title, worker) => {
+    setAllTasks([
+      ...allTasks,
+      Task(allTasks.length + 1, title, worker, 'pending')
+    ]);
+  };
+
+  // Admin window component
+  const AdminWindow = () => {
+    return (
+      <div>
+        <h2>Admin Window</h2>
+        <h3>Tasks</h3>
+        <ul>
+          {allTasks.map(task => (
+            <li key={task.id}>
+              {task.title} - Assigned to: {task.worker} - Status: {task.status}
+            </li>
+          ))}
+        </ul>
+        <h3>Add Task</h3>
+        <form
+          onSubmit={e => {
+            e.preventDefault();
+            addTask(e.target.taskTitle.value, e.target.assignedWorker.value);
+            e.target.taskTitle.value = '';
+          }}
+        >
+          <input type="text" placeholder="Task title" name="taskTitle" />
+          <select name="assignedWorker">
+            {allWorkers.map(worker => (
+              <option key={worker.id} value={worker.name}>
+                {worker.name}
+              </option>
+            ))}
+          </select>
+          <button type="submit">Add Task</button>
+        </form>
+      </div>
+    );
+  };
+
+  // Worker window component
+  const WorkerWindow = ({ worker }) => {
+    const workerTasks = allTasks.filter(task => task.worker === worker.name);
+
+    return (
+      <div>
+        <h2>{worker.name} ({worker.role}) Window</h2>
+        <h3>Tasks</h3>
+        <ul>
+          {workerTasks.map(task => (
+            <li key={task.id}>
+              {task.title} - Status: {task.status}{' '}
+              {worker.role === 'worker' && task.status === 'pending' ? (
+                <button
+                  onClick={() => {
+                    updateTaskStatus(task.id, 'completed');
+                  }}
+                >
+                  Complete Task
+                </button>
+              ) : null}
+            </li>
+          ))}
+        </ul>
+      </div>
+    );
+  };
+
+  return (
+    <div>
+      <AdminWindow />
+      {allWorkers.map(worker => (
+        <WorkerWindow key={worker.id} worker={worker} />
+      ))}
+    </div>
+  );
+};
+
+export default App;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// import React, { useState } from 'react';
+
+// const tasks = [
+//   { id: 1, name: 'Task 1', worker: 'Worker 1', status: 'Incomplete' },
+//   { id: 2, name: 'Task 2', worker: 'Worker 2', status: 'Incomplete' },
+//   { id: 3, name: 'Task 3', worker: 'Worker 1', status: 'Incomplete' },
+//   { id: 4, name: 'Task 4', worker: 'Worker 2', status: 'Incomplete' },
+// ];
+
+// const Admin = () => {
+//   const [allTasks, setAllTasks] = useState(tasks);
+
+//   const handleCreateTask = (taskName) => {
+//     setAllTasks([
+//       ...allTasks,
+//       {
+//         id: allTasks.length + 1,
+//         name: taskName,
+//         worker: '',
+//         status: 'Incomplete',
+//       },
+//     ]);
+//   };
+
+//   const handleAssignWorker = (workerName, taskId) => {
+//     setAllTasks(
+//       allTasks.map((task) => {
+//         if (task.id === taskId) {
+//           return {
+//             ...task,
+//             worker: workerName,
+//           };
+//         }
+//         return task;
+//       })
+//     );
+//   };
+
+//   return (
+//     <div>
+//       <h1>Admin Page</h1>
+//       <CreateTaskForm onCreateTask={handleCreateTask} />
+//       <AssignWorkerForm
+//         allTasks={allTasks}
+//         onAssignWorker={handleAssignWorker}
+//       />
+//       <TaskList tasks={allTasks} />
+//     </div>
+//   );
+// };
+
+// const CreateTaskForm = ({ onCreateTask }) => {
+//   const [taskName, setTaskName] = useState('');
+
+//   const handleSubmit = (e) => {
+//     e.preventDefault();
+//     onCreateTask(taskName);
+//     setTaskName('');
+//   };
+
+//   return (
+//     <form onSubmit={handleSubmit}>
+//       <input
+//         type="text"
+//         value={taskName}
+//         onChange={(e) => setTaskName(e.target.value)}
+//       />
+//       <button type="submit">Create Task</button>
+//     </form>
+//   );
+// };
+
+// const AssignWorkerForm = ({ allTasks, onAssignWorker }) => {
+//   const [workerName, setWorkerName] = useState('');
+//   const [selectedTaskId, setSelectedTaskId] = useState(null);
+
+//   const handleSubmit = (e) => {
+//     e.preventDefault();
+//     onAssignWorker(workerName, selectedTaskId);
+//     setWorkerName('');
+//     setSelectedTaskId(null);
+//   };
+
+//   return (
+//     <form onSubmit={handleSubmit}>
+//       <input
+//         type="text"
+//         value={workerName}
+//         onChange={(e) => setWorkerName(e.target.value)}
+//       />
+//       <select
+//         value={selectedTaskId || ''}
+//         onChange={(e)=> setSelectedTaskId(Number(e.target.value))}
+//         >
+//         <option value="">Select Task</option>
+//         {allTasks
+//         .filter((task) => !task.worker)
+//         .map((task) => (
+//         <option key={task.id} value={task.id}>
+//         {task.name}
+//         </option>
+//         ))}
+//         </select>
+//         <button type="submit">Assign Worker</button>
+//         </form>
+//         );
+//         };
+        
+//         const TaskList = ({ tasks }) => (
+        
+//           <table>
+//             <thead>
+//               <tr>
+//                 <th>Task Name</th>
+//                 <th>Assigned Worker</th>
+//                 <th>Status</th>
+//               </tr>
+//             </thead>
+//             <tbody>
+//               {tasks.map((task) => (
+//                 <tr key={task.id}>
+//                   <td>{task.name}</td>
+//                   <td>{task.worker || 'Not assigned'}</td>
+//                   <td>{task.status}</td>
+//                 </tr>
+//               ))}
+//             </tbody>
+//           </table>
+//         );
+//         const Worker = ({ workerName }) => {
+//         const [allTasks, setAllTasks] = useState(tasks);
+        
+//         const handleCompleteTask = (taskId) => {
+//         setAllTasks(
+//         allTasks.map((task) => {
+//         if (task.id === taskId) {
+//         return {
+//         ...task,
+//         status: 'Complete',
+//         };
+//         }
+//         return task;
+//         })
+//         );
+//         };
+        
+//         const workerTasks = allTasks.filter((task) => task.worker === workerName);
+        
+//         return (
+//         <div>
+//         <h1>{workerName}'s Tasks</h1>
+//         <TaskList tasks={workerTasks} />
+//         <CompleteTaskForm
+//              workerTasks={workerTasks}
+//              onCompleteTask={handleCompleteTask}
+//            />
+//         </div>
+//         );
+//         };
+        
+//         const CompleteTaskForm = ({ workerTasks, onCompleteTask }) => {
+//         const [selectedTaskId, setSelectedTaskId] = useState(null);
+        
+//         const handleSubmit = (e) => {
+//         e.preventDefault();
+//         onCompleteTask(selectedTaskId);
+//         setSelectedTaskId(null);
+//         };
+        
+//         return (
+//         <form onSubmit={handleSubmit}>
+//         <select
+//         value={selectedTaskId || ''}
+//         onChange={(e) => setSelectedTaskId(Number(e.target.value))}
+//         >
+//         <option value="">Select Task</option>
+//         {workerTasks.map((task) => (
+//         <option key={task.id} value={task.id}>
+//         {task.name}
+//         </option>
+//         ))}
+//         </select>
+//         <button type="submit">Complete Task</button>
+//         </form>
+//         );
+//         };
+        
+//         const App = () => (
+        
+//           <div>
+//             <Admin />
+//             <Worker workerName="Worker 1" />
+//             <Worker workerName="Worker 2" />
+//           </div>
+//           );
+
+//           export default App;
+          
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// import React, { useState } from "react";
+
+// function App() {
+//   const [tasks, setTasks] = useState([
+//     { id: 1, task: "Task 1", worker: "Worker 1", status: "Pending" },
+//     { id: 2, task: "Task 2", worker: "Worker 2", status: "Pending" }
+//   ]);
+
+//   const [workerTasks, setWorkerTasks] = useState([]);
+
+//   function handleCreateTask(task) {
+//     setTasks([...tasks, task]);
+//   }
+
+//   function handleAssignTask(worker, taskId) {
+//     const task = tasks.find(task => task.id === taskId);
+//     task.worker = worker;
+//     setWorkerTasks([...workerTasks, task]);
+//   }
+
+//   function handleCompleteTask(taskId) {
+//     const taskIndex = workerTasks.findIndex(task => task.id === taskId);
+//     workerTasks[taskIndex].status = "Complete";
+//     setWorkerTasks([...workerTasks]);
+//   }
+
+//   return (
+//     <div className="App">
+//       <h1>Admin Page</h1>
+//       <TaskList tasks={tasks} onAssignTask={handleAssignTask} />
+//       <CreateTaskForm onCreateTask={handleCreateTask} />
+
+//       <h1>Worker Page</h1>
+//       <TaskList tasks={workerTasks} onCompleteTask={handleCompleteTask} />
+//     </div>
+//   );
+// }
+
+// function TaskList({ tasks, onAssignTask, onCompleteTask }) {
+//   return (
+//     <table>
+//       <thead>
+//         <tr>
+//           <th>ID</th>
+//           <th>Task</th>
+//           <th>Worker</th>
+//           <th>Status</th>
+//           {onAssignTask && <th>Assign</th>}
+//           {onCompleteTask && <th>Complete</th>}
+//         </tr>
+//       </thead>
+//       <tbody>
+//         {tasks.map(task => (
+//           <tr key={task.id}>
+//             <td>{task.id}</td>
+//             <td>{task.task}</td>
+//             <td>{task.worker}</td>
+//             <td>{task.status}</td>
+//             {onAssignTask && (
+//               <td>
+//                 <AssignTaskForm onAssignTask={worker => onAssignTask(worker, task.id)} />
+//               </td>
+//             )}
+//             {onCompleteTask && (
+//               <td>
+//                 <button onClick={() => onCompleteTask(task.id)}>Complete</button>
+//               </td>
+//             )}
+//           </tr>
+//         ))}
+//       </tbody>
+//     </table>
+//   );
+// }
+
+// function CreateTaskForm({ onCreateTask }) {
+//   const [task, setTask] = useState("");
+
+//   function handleSubmit(e) {
+//     e.preventDefault();
+//     onCreateTask
+//     ({ id: Date.now(), task, worker: "", status: "Pending" });
+//     setTask("");
+//     }
+    
+//     return (
+//     <form onSubmit={handleSubmit}>
+//     <input type="text" value={task} onChange={e => setTask(e.target.value)} />
+//     <button type="submit">Create Task</button>
+//     </form>
+//     );
+//     }
+    
+//     function AssignTaskForm({ onAssignTask }) {
+//     const [worker, setWorker] = useState("");
+    
+//     function handleSubmit(e) {
+//     e.preventDefault();
+//     onAssignTask(worker);
+//     setWorker("");
+//     }
+    
+//     return (
+//     <form onSubmit={handleSubmit}>
+//     <input type="text" value={worker} onChange={e => setWorker(e.target.value)} />
+//     <button type="submit">Assign</button>
+//     </form>
+//     );
+//     }
+    
+//     export default App;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// import React, { useState } from "react";
+
+// const initialTasks = [
+//   { id: 1, title: "Task 1", worker: "Worker 1", status: "In Progress" },
+//   { id: 2, title: "Task 2", worker: "Worker 2", status: "In Progress" },
+//   { id: 3, title: "Task 3", worker: "Worker 3", status: "In Progress" }
+// ];
+
+// const AdminPage = () => {
+//   const [tasks, setTasks] = useState(initialTasks);
+//   const [newTask, setNewTask] = useState({
+//     id: "",
+//     title: "",
+//     worker: "",
+//     status: "In Progress"
+//   });
+
+//   const handleTaskChange = e => {
+//     setNewTask({ ...newTask, [e.target.name]: e.target.value });
+//   };
+
+//   const handleAddTask = () => {
+//     setTasks([...tasks, newTask]);
+//     setNewTask({ id: "", title: "", worker: "", status: "In Progress" });
+//   };
+
+//   return (
+//     <div>
+//       <h2>Admin Page</h2>
+//       <div>
+//         <input
+//           type="text"
+//           name="title"
+//           placeholder="Task Title"
+//           value={newTask.title}
+//           onChange={handleTaskChange}
+//         />
+//         <input
+//           type="text"
+//           name="worker"
+//           placeholder="Assigned Worker"
+//           value={newTask.worker}
+//           onChange={handleTaskChange}
+//         />
+//         <button onClick={handleAddTask}>Add Task</button>
+//       </div>
+//       <table>
+//         <thead>
+//           <tr>
+//             <th>Task Title</th>
+//             <th>Assigned Worker</th>
+//             <th>Status</th>
+//           </tr>
+//         </thead>
+//         <tbody>
+//           {tasks.map(task => (
+//             <tr key={task.id}>
+//               <td>{task.title}</td>
+//               <td>{task.worker}</td>
+//               <td>{task.status}</td>
+//             </tr>
+//           ))}
+//         </tbody>
+//       </table>
+//     </div>
+//   );
+// };
+
+// const WorkerPage = ({ workerName }) => {
+//   const [tasks, setTasks] = useState(initialTasks);
+
+//   const workerTasks = tasks.filter(task => task.worker === workerName);
+
+//   const handleCompleteTask = taskId => {
+//     setTasks(
+//       tasks.map(task =>
+//         task.id === taskId ? { ...task, status: "Completed" } : task
+//       )
+//     );
+//   };
+
+//   return (
+//     <div>
+//       <h2>Worker Page - {workerName}</h2>
+//       <table>
+//         <thead>
+//           <tr>
+//             <th>Task Title</th>
+//             <th>Status</th>
+//             <th>Action</th>
+//           </tr>
+//         </thead>
+//         <tbody>
+// {workerTasks.map(task => (
+// <tr key={task.id}>
+// <td>{task.title}</td>
+// <td>{task.status}</td>
+// <td>
+// {task.status === "In Progress" && (
+// <button onClick={() => handleCompleteTask(task.id)}>
+// Complete
+// </button>
+// )}
+// </td>
+// </tr>
+// ))}
+// </tbody>
+// </table>
+// </div>
+// );
+// };
+
+// const App = () => {
+// const [view, setView] = useState("admin");
+// const [selectedWorker, setSelectedWorker] = useState("");
+
+// return (
+// <div>
+// <h1>Task Management System</h1>
+// <div>
+// <button onClick={() => setView("admin")}>Admin</button>
+// <button onClick={() => setView("worker")}>Worker</button>
+// </div>
+// {view === "admin" && <AdminPage />}
+// {view === "worker" && (
+// <div>
+// <select onChange={e => setSelectedWorker(e.target.value)}>
+// <option value="">Select Worker</option>
+// <option value="Worker 1">Worker 1</option>
+// <option value="Worker 2">Worker 2</option>
+// <option value="Worker 3">Worker 3</option>
+// </select>
+// {selectedWorker && <WorkerPage workerName={selectedWorker} />}
+// </div>
+// )}
+// </div>
+// );
+// };
+
+// export default App;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// import React, { useState } from "react";
+
+// const Admin = ({ tasks, setTasks, workers, setWorkers }) => {
+//   const [newTask, setNewTask] = useState({
+//     name: "",
+//     assignedTo: "",
+//     status: "pending",
+//   });
+
+//   const handleSubmit = (e) => {
+//     e.preventDefault();
+//     setTasks([...tasks, newTask]);
+//   };
+
+//   const handleChange = (e) => {
+//     setNewTask({ ...newTask, [e.target.name]: e.target.value });
+//   };
+
+//   return (
+//     <div>
+//       <h2>Admin Panel</h2>
+//       <form onSubmit={handleSubmit}>
+//         <input
+//           type="text"
+//           name="name"
+//           placeholder="Task name"
+//           value={newTask.name}
+//           onChange={handleChange}
+//         />
+//         <select
+//           name="assignedTo"
+//           value={newTask.assignedTo}
+//           onChange={handleChange}
+//         >
+//           <option value="">Select worker</option>
+//           {workers.map((worker) => (
+//             <option key={worker.id} value={worker.id}>
+//               {worker.name}
+//             </option>
+//           ))}
+//         </select>
+//         <button type="submit">Create Task</button>
+//       </form>
+//       <h3>Tasks</h3>
+//       <table>
+//         <thead>
+//           <tr>
+//             <th>Task Name</th>
+//             <th>Assigned To</th>
+//             <th>Status</th>
+//           </tr>
+//         </thead>
+//         <tbody>
+//           {tasks.map((task) => (
+//             <tr key={task.name}>
+//               <td>{task.name}</td>
+//               <td>{task.assignedTo}</td>
+//               <td>{task.status}</td>
+//             </tr>
+//           ))}
+//         </tbody>
+//       </table>
+//     </div>
+//   );
+// };
+
+// const Worker = ({ id, tasks, setTasks }) => {
+//   const handleClick = (task) => {
+//     const updatedTasks = tasks.map((t) =>
+//       t.name === task.name ? { ...t, status: "completed" } : t
+//     );
+//     setTasks(updatedTasks);
+//   };
+
+//   return (
+//     <div>
+//       <h2>Worker {id}</h2>
+//       <h3>Tasks</h3>
+//       <table>
+//         <thead>
+//           <tr>
+//             <th>Task Name</th>
+//             <th>Status</th>
+//             <th>Action</th>
+//           </tr>
+//         </thead>
+//         <tbody>
+//           {tasks
+//             .filter((task) => task.assignedTo === id)
+//             .map((task) => (
+//               <tr key={task.name}>
+//                 <td>{task.name}</td>
+//                 <td>{task.status}</td>
+// <td>
+// {task.status === "pending" ? (
+// <button onClick={() => handleClick(task)}>Complete</button>
+// ) : (
+// "Completed"
+// )}
+// </td>
+// </tr>
+// ))}
+// </tbody>
+// </table>
+// </div>
+// );
+// };
+// const App = () => {
+//   const [tasks, setTasks] = useState([]);
+//   const [workers, setWorkers] = useState([
+//   { id: 1, name: "John" },
+//   { id: 2, name: "Jane" },
+//   { id: 3, name: "Jim" },
+//   ]);
+  
+//   return (
+//   <div>
+//   <Admin tasks={tasks} setTasks={setTasks} workers={workers} setWorkers={setWorkers} />
+//   {workers.map((worker) => (
+//   <Worker key={worker.id} id={worker.id} tasks={tasks} setTasks={setTasks} />
+//   ))}
+//   </div>
+//   );
+//   };
+  
+//   export default App;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// import React, { useState } from 'react';
+
+// const App = () => {
+//   const [tasks, setTasks] = useState([
+//     { id: 1, name: 'Task 1', status: 'Pending', assignee: 'Worker 1' },
+//     { id: 2, name: 'Task 2', status: 'Pending', assignee: 'Worker 2' },
+//     { id: 3, name: 'Task 3', status: 'Pending', assignee: 'Worker 3' },
+//     { id: 4, name: 'Task 4', status: 'Pending', assignee: 'Worker 4' }
+//   ]);
+
+//   const [isAdmin, setIsAdmin] = useState(false);
+//   const [selectedTask, setSelectedTask] = useState(null);
+//   const [worker, setWorker] = useState(null);
+
+//   const handleTaskSelect = task => {
+//     setSelectedTask(task);
+//   };
+
+//   const handleTaskAssign = (task, assignee) => {
+//     setTasks(
+//       tasks.map(t =>
+//         t.id === task.id ? { ...t, assignee, status: 'Assigned' } : t
+//       )
+//     );
+//   };
+
+//   const handleTaskComplete = task => {
+//     setTasks(
+//       tasks.map(t => (t.id === task.id ? { ...t, status: 'Completed' } : t))
+//     );
+//   };
+
+//   const AdminWindow = () => (
+//     <div>
+//       <h2>Admin Window</h2>
+//       <table>
+//         <thead>
+//           <tr>
+//             <th>Task Name</th>
+//             <th>Status</th>
+//             <th>Assignee</th>
+//             <th>Action</th>
+//           </tr>
+//         </thead>
+//         <tbody>
+//           {tasks.map(task => (
+//             <tr key={task.id}>
+//               <td>{task.name}</td>
+//               <td>{task.status}</td>
+//               <td>{task.assignee}</td>
+//               <td>
+//                 <button
+//                   disabled={task.status !== 'Pending'}
+//                   onClick={() => handleTaskSelect(task)}
+//                 >
+//                   Assign
+//                 </button>
+//               </td>
+//             </tr>
+//           ))}
+//         </tbody>
+//       </table>
+//       {selectedTask && (
+//         <div>
+//           <h3>Assign Task</h3>
+//           <p>Selected Task: {selectedTask.name}</p>
+//           <select onChange={e => setWorker(e.target.value)}>
+//             <option value="">Select Worker</option>
+//             <option value="Worker 1">Worker 1</option>
+//             <option value="Worker 2">Worker 2</option>
+//             <option value="Worker 3">Worker 3</option>
+//             <option value="Worker 4">Worker 4</option>
+//           </select>
+         
+//           <button
+//             disabled={!worker}
+//             onClick={() => handleTaskAssign(selectedTask, worker)}
+//           >
+//             Assign
+//           </button>
+//         </div>
+//       )}
+//     </div>
+//   );
+
+//   const WorkerWindow = ({ worker }) => (
+//     <div>
+//       <h2>Worker Window</h2>
+//       <p>Worker: {worker}</p>
+//       <table>
+//         <thead>
+//           <tr>
+//             <th>Task Name</th>
+//             <th>Status</th>
+//             <th>Action</th>
+//           </tr>
+//         </thead>
+//         <tbody>
+//           {tasks
+//             .filter(task => task.assignee === worker)
+//             .map(task => (
+//               <tr key={task.id}>
+//                 <td>{task.name}</td>
+//                 <td>{task.status}</td>
+//                 <td>
+//                   {task.status === 'Assigned' && (
+//                     <button onClick={() => handleTaskComplete(task)}>
+//                       Complete
+//                     </button>
+//                   )}
+//                 </td>
+//               </tr>
+//             ))}
+//         </tbody>
+//       </table>
+//     </div>
+//   );
+
+//   return (
+//     <div>
+//       <button onClick={() => setIsAdmin(!isAdmin)}>
+//         {isAdmin ? 'Switch to Worker' : 'Switch to Admin'}
+//       </button>
+//       {isAdmin ? (
+//         <AdminWindow />
+//       ) : (
+//         <div>
+//           <WorkerWindow worker="Worker 1" />
+//           <WorkerWindow worker="Worker 2" />
+//           <WorkerWindow worker="Worker 3" />
+//           <WorkerWindow worker="Worker 4" />
+//         </div>
+//       )}
+//     </div>
+//   );
+// };
+
+// export default App;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// import logo from './logo.svg';
+// import './App.css';
+
+// import React, { useState } from "react";
+
+// const Tasks = () => {
+//   const [tasks, setTasks] = useState([
+//     { id: 1, description: "Task 1", status: "pending" },
+//     { id: 2, description: "Task 2", status: "pending" },
+//     { id: 3, description: "Task 3", status: "pending" }
+//   ]);
+
+//   const handleStatusChange = id => {
+//     setTasks(
+//       tasks.map(task =>
+//         task.id === id
+//           ? { ...task, status: "completed" }
+//           : { ...task }
+//       )
+//     );
+//   };
+
+//   const handleAddTask = task => {
+//     setTasks([...tasks, { ...task, id: tasks.length + 1 }]);
+//   };
+
+//   return (
+//     <div>
+//       <h1>Tasks</h1>
+//       <table>
+//         <thead>
+//           <tr>
+//             <th>ID</th>
+//             <th>Description</th>
+//             <th>Status</th>
+//             <th>Action</th>
+//           </tr>
+//         </thead>
+//         <tbody>
+//           {tasks.map(task => (
+//             <tr key={task.id}>
+//               <td>{task.id}</td>
+//               <td>{task.description}</td>
+//               <td>{task.status}</td>
+//               <td>
+//                 {task.status === "pending" ? (
+//                   <button onClick={() => handleStatusChange(task.id)}>
+//                     Mark as Completed
+//                   </button>
+//                 ) : null}
+//               </td>
+//             </tr>
+//           ))}
+//         </tbody>
+//       </table>
+//       <h2>Add Task</h2>
+//       <AddTaskForm onAddTask={handleAddTask} />
+//     </div>
+//   );
+// };
+
+// const AddTaskForm = ({ onAddTask }) => {
+//   const [task, setTask] = useState({ description: "", status: "pending" });
+
+//   const handleInputChange = event => {
+//     setTask({ ...task, [event.target.name]: event.target.value });
+//   };
+
+//   const handleSubmit = event => {
+//     event.preventDefault();
+//     onAddTask(task);
+//     setTask({ description: "", status: "pending" });
+//   };
+
+//   return (
+//     <form onSubmit={handleSubmit}>
+//       <input
+//         type="text"
+//         name="description"
+//         value={task.description}
+//         onChange={handleInputChange}
+//       />
+//       <button type="submit">Add Task</button>
+//     </form>
+//   );
+// };
+
+// export default Tasks;
+
+
