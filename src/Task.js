@@ -1,10 +1,11 @@
 import React from 'react'
 
-const Task = (id, title, worker, status) => {
+const Task = (id, title, worker,type, status) => {
     return {
       id,
       title,
       worker,
+      type,
       status
     };
   };

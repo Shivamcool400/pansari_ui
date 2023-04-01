@@ -4,6 +4,17 @@ import Task from './Task';
 import {BrowserRouter as Router, Routes, Route} from 'react-router-dom';
 import Fire from './firebase'
 import 'firebase/compat/database';
+import Login from './login';
+import ProtectedRoute from './protected';
+import Home from './home';
+import { getStorage,ref,
+  uploadBytes,
+  getDownloadURL,
+  listAll,
+  list, } from 'firebase/storage';
+import { v4 } from "uuid";
+import AdminWindow from './AdminWindow';
+
 
 // Define the task model
 
@@ -36,12 +47,17 @@ const App = () => {
   const arr = [];
   const temp = [];
   const db = Fire.database();
+  const storage = getStorage(Fire);
   const [data, setData] = useState([]);
+  const [dates, setDates] = useState([]);
+  const [selectedDate, setSelectedDate] = useState("");
+  var [show,setShow] = useState(false);
   var today = new Date();
   var month = today.getMonth() + 1;
   var date = today.getDate();
   var year = today.getFullYear();
-  var time = `${today.getHours()}:${today.getMinutes()}:${today.getSeconds()}`
+  var time = `${today.getHours()}:${today.getMinutes()}:${today.getSeconds()}`;
+  var exact_date = `${date}:${month}:${year}`
    
   const [allTasks, setAllTasks] = useState(tasks);
   const [allWorkers, setAllWorkers] = useState(workers);
@@ -72,7 +88,10 @@ const App = () => {
     return newArray;
 
 }
-    
+    function removeDuplicates(arr) {
+        return arr.filter((item, 
+            index) => arr.indexOf(item) === index);
+    }
     
   const listen = async (name) => {
     var starCountRef =  db.ref(name);
@@ -86,23 +105,24 @@ const App = () => {
         
         
             arr.push(childData);
-            console.log(arr);
+            temp.push(childData.date);
     
         
         
       });
-      console.log(arr);
     });
 
     let newArr = filterArray(arr);
+    let newdate = removeDuplicates(temp);
     setData(newArr);
+    setDates(newdate);
   }
 
       useEffect(() => {
         
   
         
-        listen("Chiddi");
+        listen("Chiddi")
         listen("Sherry Man")
         listen("Bunty")
         listen("Rohit Motta")
@@ -110,8 +130,25 @@ const App = () => {
         listen("Parveen")
         
     }, []);
+
+
+    //Date Functions 
  
-  
+  const handleDateChange = (event) => {
+    setSelectedDate(event.target.value);
+  };
+   const reset = () => {
+   setShow("");
+   setSelectedDate("");
+   var dropDown = document.getElementById("inputGroupSelect01");  
+   dropDown.selectedIndex = 0;
+  }
+  const getdetails = ()=>{
+  setShow(true);
+
+  console.log(selectedDate);
+    
+ }
 
   // Function to update a task status
   const updateTaskStatus = (taskId, newStatus, name, date, order, title) => {
@@ -142,17 +179,20 @@ newPostRef.update({
 });
   };
 
-  //Function to add a new task
-  const addTask = (title, worker) => {
    
+
+
+
+  //Function to add a new task
+  const addTask = (title, worker, type) => {
     setAllTasks([
       ...allTasks,
-      Task(allTasks.length + 1, title, worker, 'pending')
+      Task(allTasks.length + 1, title, worker,type, 'pending')
     ]);
     setData(
       [
         ...data,
-        Task(data.length + 1, title, worker, 'pending')
+        Task(data.length + 1, title, worker,type, 'pending')
       ]
     )
     
@@ -164,7 +204,8 @@ newPostRef.set({
       Order_time: time,
       title : title,
       worker : worker,
-      status : "pending"
+      status : "pending",
+      type: type
 });
     // db.ref(worker).update({
     //   id : allTasks.length + 1,
@@ -176,108 +217,70 @@ newPostRef.set({
 
     // });
     tasks.push(allTasks);
+    listen("Chiddi")
+    listen("Sherry Man")
+    listen("Bunty")
+    listen("Rohit Motta")
+    listen("Mahajan")
+    listen("Parveen")
+    
   };
 
- // Admin window component
-  const AdminWindow = () => {
-    return (
-      <div>
-        <h2>Admin Window</h2>
-        <h3>Tasks</h3>
-        <table className="table">
-  <thead>
-    <tr>
-      <th scope="col">Id</th>
-      <th scope="col">Date and Order-Time</th>
-      <th scope="col">Task Title</th>
-      <th scope="col">Assigned To</th>
-      <th scope="col">Status</th>
-    </tr>
-  </thead>
-  <tbody>
-  {data.length < 1 ? <h3>no tasks</h3>  : data.map((task,i) => (
-          <tr key={i}  className={task.status === 'pending' ? 'table-danger' :'table-success'}>
-      
-          <th  scope="row">{i + 1}</th>
-          <td>{task.date} /  {task.Order_time}</td>
-          <td>{task.title}</td>
-          <td>{task.worker}</td>
-          <td>{task.status}</td>
-        </tr>  
-          ))}
-          {/* {allTasks.map(task => (
-          <tr className={task.status === 'pending' ? 'table-danger' :'table-success'}>
-      
-          <th scope="row">{task.id}</th>
-          <td>{task.title}</td>
-          <td>{task.worker}</td>
-          <td>{task.status}</td>
-        </tr>  
-          ))} */}
-    
-    
-  </tbody>
-</table>
-       
-<div className="container text-center">
-  <div className="row">
-    <div className="col">
-    <h3>Add Task</h3>
-    </div>
-    </div>
-    <form
-          onSubmit={e => {
-            e.preventDefault();
-            addTask(e.target.taskTitle.value, e.target.assignedWorker.value);
-            e.target.taskTitle.value = '';
-          }}
-        >
-          <br/>
-          <div className="row">
-    <div className="col">
-    <div className="input-group">
-  <span className="input-group-text">Task Description</span>
-  <textarea className="form-control" aria-label="With textarea" name="taskTitle"></textarea>
-</div>
-    </div>
-    </div>
-    <br/>
-    <div className="row">
-    <div className="col">
-    <select className="form-select" aria-label="Default select example"name="assignedWorker">
-            {allWorkers.map(worker => (
-              <option key={worker.id} value={worker.name}>
-                {worker.name}
-              </option>
-            ))}
-          </select>
-    </div>
-    </div>
-    <br/>
-    <div className="row">
-    <div className="col">
-    <button type="submit"className="btn btn-secondary btn-lg">Add Task</button>
-    </div>
-    </div>
-          
-         
-          
-        </form>
-      </div>
-  
-</div>
-        
-        
-    );
+  //image
+  const [imageUpload, setImageUpload] = useState(null);
+  const [imageUrls, setImageUrls] = useState([]);
+
+  const imagesListRef = ref(storage, exact_date);
+  const uploadFile = () => {
+    const imageRef = ref(storage, `${exact_date}/${imageUpload.name + v4()}`);
+    uploadBytes(imageRef, imageUpload).then((snapshot) => {
+      getDownloadURL(snapshot.ref).then((url) => {
+        setImageUrls((prev) => [...prev, url]);
+      });
+    });
   };
+ 
+//modal
+const hel=()=>{
+  const exampleModal = document.getElementById('exampleModal')
+  exampleModal.addEventListener('show.bs.modal', event => {
+    // Button that triggered the modal
+    const button = event.relatedTarget
+    // Extract info from data-bs-* attributes
+    const recipient = button.getAttribute('data-bs-whatever')
+    // If necessary, you could initiate an AJAX request here
+    // and then do the updating in a callback.
+    //
+    // Update the modal's content.
+    const demo = data.filter(task => task.id == `${recipient}`);
+    
+    const modalBodyInput = exampleModal.querySelector('.modal-body img')
+     console.log(recipient,demo);
+     if(demo[0].url){
+      modalBodyInput.src = demo[0].url
+     }
+     else{
+      modalBodyInput.src = 'https://upload.wikimedia.org/wikipedia/commons/thumb/6/65/No-Image-Placeholder.svg/1665px-No-Image-Placeholder.svg.png'
+     }
+    
+  })
+}
+
 
   // Worker window component
   const WorkerWindow = ({ worker }) => {
-    const workerTasks = data.filter(task => task.worker === worker.name);
+    const workerTasks = data.filter(task => task.worker === worker.name && task.status === "pending");
 
     return (
       <div>
-        <h2>Hello, {worker.name} . These are Your Upcoming Tasks.</h2>
+        <h3 className='text-center'>
+  Bittu Pansari
+  <br/>
+  <small class="text-muted">Shop Orders Panel</small>
+</h3>
+<br/>
+<br/>
+        <h2>Hello, {worker.name} . These are Your Pending Tasks.</h2>
         {/* <h3>Tasks</h3> */}
         <table className="table">
   <thead>
@@ -285,6 +288,7 @@ newPostRef.set({
       <th scope="col">Id</th>
       <th scope="col">Date and Order-Time</th>
       <th scope="col">Task Title</th>
+      <th scope="col">Images</th>
       <th scope="col">Status</th>
       <th scope="col">Change Status</th>
     </tr>
@@ -296,23 +300,77 @@ newPostRef.set({
           <th scope="row">{i+1}</th>
           <td>{task.date} /  {task.Order_time}</td>
           <td>{task.title}</td>
+          <td><button type="button" onClick={hel} class="btn btn-secondary" data-bs-toggle="modal" data-bs-target="#exampleModal" data-bs-whatever={task.id}>
+  Show Image
+</button>
+{/* modal */}
+<div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h1 class="modal-title fs-5" id="exampleModalLabel">Modal title</h1>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+      <div class="container text-center">
+  <div class="row">
+    <div class="col">
+    </div>
+    <div class="col-sm-12 col-md-4">
+    <img class="img-thumbnail" src='' />
+  </div>
+   <div class="col">
+    </div>
+</div> 
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+</td>
           <td>{task.status}</td>
-          <td>   {worker.role === 'worker' && task.status === 'pending' ? (
-                <button
+          <td>   {worker.role === 'worker' && task.status === 'pending' && task.type === "Non-Payment" ? (
+                <button className='btn btn-success'
                   onClick={() => {
                     updateTaskStatus(task.id, 'completed',task.worker,task.date,task.Order_time,task.title);
                   }}
                 >
-                  Complete Task
+                  Completed successfully
                 </button>
-              ) : null}</td>
+              ) : (
+                <div><button className='btn btn-success'
+                onClick={() => {
+                  updateTaskStatus(task.id, 'completed Payment Received',task.worker,task.date,task.Order_time,task.title);
+                }}
+              >
+                Delivered Payment Received!
+              </button>
+              <button className='btn btn-warning'
+                  onClick={() => {
+                    updateTaskStatus(task.id, 'completed Payment Not Received',task.worker,task.date,task.Order_time,task.title);
+                  }}
+                >
+                  Delivered Payment Not Received!
+                </button>
+              </div>
+                
+              )}</td>
         </tr>  
           ))}
     
     
   </tbody>
 </table>
-       
+
+
+<br/>
+<br/>
+<footer className='footer'>
+    <div className="copyright text-center">&copy; Developed by DayaRam and Sons. Version 1.0 @2023</div>
+      </footer> 
       </div>
     );
   };
@@ -322,8 +380,10 @@ newPostRef.set({
 <Router>
       
         <Routes>
-          
-          <Route exact path="/admin" element={<AdminWindow />}/>
+        <Route exact path="/" element={<Home />}/>
+        <Route exact path="/login" element={<Login />}/>
+        
+        <Route exact path="/admin" element={<ProtectedRoute ProtectedComponent={<AdminWindow />} />}/>
           {allWorkers.map(worker => (
         <Route exact path={worker.name} element={<WorkerWindow key={worker.id} worker={worker} />}/>
       ))}
